@@ -1,0 +1,12 @@
+name: no_exif
+
+dependencies:
+  image_whisperer:
+    git:
+      url: https://github.com/skawa-universe/image_whisperer.git
+  dart_to_js_script_rewriter:
+transformers:
+- $dart2js:
+    minify: true
+    csp: true
+- dart_to_js_script_rewriter
