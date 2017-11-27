@@ -1,7 +1,9 @@
 import "dart:async";
 import "dart:html";
 
+import "package:pool/pool.dart";
 import "package:image_whisperer/image_whisperer.dart";
+import "package:no_exif/dropper.dart";
 
 Future<CanvasElement> showIn(String selector, BaseImage image) async {
   Element parent = document.querySelector(selector);
@@ -39,6 +41,51 @@ Map<String, PipelineModifier> modifiers = {
   },
 };
 
+/// One image at a time
+Pool _processes = new Pool(1);
+
+Future<Null> waitForSlot<T>(Pool pool, FutureOr<T> callback()) async {
+  PoolResource resource = await pool.request();
+  // ignore: unawaited_futures
+  new Future<T>.sync(callback).whenComplete(resource.release);
+}
+
+Future<Null> processFile(File file, ImageProcessingPipeline pipeline, {bool needFile}) async {
+  await waitForSlot(_processes, () async {
+    BlobImage image = new BlobImage(file, name: file.name);
+    showIn("#naive", image).then((CanvasElement canvas) {
+      canvas.style.maxWidth = "64px";
+      canvas.style.maxHeight = "64px";
+    });
+    await pipeline.process(image).then((BaseImage result) {
+      showIn("#tamed", result);
+      BlobImage blobImage = result;
+      print(blobImage.blob.type);
+      if (needFile ?? false) download(blobImage.name, blobImage.blob);
+    });
+  });
+}
+
+class FileDropAdapter implements FileDropListener {
+  FileDropAdapter(this.dropArea, this.pipeline);
+
+  @override
+  void acceptBlobs(List<Blob> files) {
+    files.forEach((File file) => processFile(file, pipeline));
+  }
+
+  @override
+  set accepting(bool value) {
+    dropArea.classes.toggle("dropping", value);
+  }
+
+  @override
+  bool isMimeTypeAccepted(String mimeType) => mimeType?.startsWith("image/") ?? false;
+
+  final Element dropArea;
+  final ImageProcessingPipeline pipeline;
+}
+
 void main() {
   Element spinner = document.querySelector("#spinner");
   int angle = 0;
@@ -61,18 +108,9 @@ void main() {
     bool needFile = event is MouseEvent && (event.shiftKey || event.altKey);
     FileUploadInputElement input = querySelector("input[type=file]");
     File file = input.files.first;
-    BlobImage image = new BlobImage(file, name: file.name);
-    showIn("#naive", image).then((CanvasElement canvas) {
-      canvas.style.maxWidth = "64px";
-      canvas.style.maxHeight = "64px";
-    });
-    pipeline.process(image).then((BaseImage result) {
-      showIn("#tamed", result);
-      BlobImage blobImage = result;
-      print(blobImage.blob.type);
-      if (needFile) download(blobImage.name, blobImage.blob);
-    }).whenComplete(() {
+    processFile(file, pipeline, needFile: needFile).whenComplete(() {
       button.disabled = false;
     });
   });
+  new Dropper(new FileDropAdapter(document.body, pipeline), document.body);
 }

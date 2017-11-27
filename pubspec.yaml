@@ -1,10 +1,11 @@
 name: no_exif
-version: 0.9.0
+version: 0.9.2
 author: Peter Siroki <psiroki@skawa.hu>
 description: A simple example for the image_whisperer library
 homepage: https://github.com/skawa-universe/no_exif
 
 dependencies:
+  pool:
   image_whisperer:
     git:
       url: https://github.com/skawa-universe/image_whisperer.git
