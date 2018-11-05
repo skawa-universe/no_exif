@@ -4,14 +4,16 @@ author: Peter Siroki <psiroki@skawa.hu>
 description: A simple example for the image_whisperer library
 homepage: https://github.com/skawa-universe/no_exif
 
+environment:
+  sdk: '>=2.0.0 <3.0.0'
+
 dependencies:
   pool:
   image_whisperer:
     git:
       url: https://github.com/skawa-universe/image_whisperer.git
-  dart_to_js_script_rewriter:
-transformers:
-- $dart2js:
-    minify: true
-    csp: true
-- dart_to_js_script_rewriter
+  stack_trace:
+
+dev_dependencies:
+  build_runner: ^1.0.0
+  build_web_compilers: ^0.4.4

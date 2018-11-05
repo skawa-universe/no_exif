@@ -4,6 +4,7 @@ import "dart:html";
 import "package:pool/pool.dart";
 import "package:image_whisperer/image_whisperer.dart";
 import "package:no_exif/dropper.dart";
+import "package:stack_trace/stack_trace.dart";
 
 Future<CanvasElement> showIn(String selector, BaseImage image) async {
   Element parent = document.querySelector(selector);
@@ -29,14 +30,14 @@ void download(String filename, Blob blob) {
 typedef void PipelineModifier(ImageProcessingPipeline pipeline, String value);
 
 Map<String, PipelineModifier> modifiers = {
-  "maxWidth": (pipeline, value) => pipeline.maxWidth = int.parse(value, onError: (_) => null),
-  "maxHeight": (pipeline, value) => pipeline.maxHeight = int.parse(value, onError: (_) => null),
+  "maxWidth": (pipeline, value) => pipeline.maxWidth = int.tryParse(value),
+  "maxHeight": (pipeline, value) => pipeline.maxHeight = int.tryParse(value),
   "maxMegapixels": (pipeline, value) {
-    double val = double.parse(value, (_) => null);
+    double val = double.tryParse(value);
     if (val == null) {
-      pipeline.maxPixels = val;
+      pipeline.maxPixels = val.toInt();
     } else {
-      pipeline.maxPixels = val * 1000000;
+      pipeline.maxPixels = (val * 1000000).toInt();
     }
   },
 };
@@ -71,7 +72,7 @@ class FileDropAdapter implements FileDropListener {
 
   @override
   void acceptBlobs(List<Blob> files) {
-    files.forEach((File file) => processFile(file, pipeline));
+    files.forEach((Blob file) => processFile(file as File, pipeline));
   }
 
   @override
@@ -86,7 +87,7 @@ class FileDropAdapter implements FileDropListener {
   final ImageProcessingPipeline pipeline;
 }
 
-void main() {
+void bindAll() {
   Element spinner = document.querySelector("#spinner");
   int angle = 0;
   new Timer.periodic(new Duration(milliseconds: 16), (Timer timer) {
@@ -113,4 +114,10 @@ void main() {
     });
   });
   new Dropper(new FileDropAdapter(document.body, pipeline), document.body);
+}
+
+void main() {
+  Chain.capture(bindAll, onError: (e, chain) {
+    print("Error: $e\n$chain");
+  });
 }
