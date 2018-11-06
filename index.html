@@ -1,5 +1,7 @@
-<!DOCTYPE html><html><head>
-  <meta charset="UTF-8">
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
   <title>Tame images</title>
   <style>
     body {
@@ -56,17 +58,16 @@
 <body>
   <div id="spinner">Look at me hanging!</div>
   <div>
-    <label>Input image: <input type="file" accept="image/*"></label>
-    <label>Maximum width: <input type="text" name="maxWidth"></label>
-    <label>Maximum height: <input type="text" name="maxHeight"></label>
-    <label>Maximum megapixels: <input type="text" name="maxMegapixels"></label>
-    <button type="button">Strip EXIF and transform</button> (⇧Click/⌥Click to save image)
+    <label>Input image: <input type="file" accept="image/*"/></label>
+    <label>Maximum width: <input type="text" name="maxWidth"/></label>
+    <label>Maximum height: <input type="text" name="maxHeight"/></label>
+    <label>Maximum megapixels: <input type="text" name="maxMegapixels"/></label>
+    <button type="button">Strip EXIF and transform</button> (&#x21E7;Click/&#x2325;Click to save image)
   </div>
   <div>
-    Naive: <span id="naive"></span><br>
+    Naive: <span id="naive"></span><br/>
     Tamed: <span id="tamed"></span>
   </div>
-  <script src="tame.dart.js"></script>
-
-
-</body></html>
+  <script defer="defer" src="tame.dart.js"></script>
+</body>
+</html>
